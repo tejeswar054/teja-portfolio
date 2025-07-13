@@ -1,25 +1,27 @@
-import React, { useRef } from 'react';
-import emailjs from 'emailjs-com';
+import React, { useState } from 'react';
 
 const Contact = () => {
-  const form = useRef();
+  const [status, setStatus] = useState('');
 
-  const sendEmail = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const form = e.target;
 
-    emailjs.sendForm(
-      'service_q68zyo3',        // ✅ Your EmailJS service ID
-      'template_cgonldd',       // ✅ Your template ID
-      form.current,
-      'mcy5Qt1dEBVfvZF1P'       // ✅ Your public key
-    )
-    .then((result) => {
-      alert("✅ Message sent successfully!");
-      form.current.reset();
-    }, (error) => {
-      alert("❌ Failed to send message. Please try again.");
-      console.error(error);
+    const data = new FormData(form);
+    const response = await fetch('https://formspree.io/f/xwpqeldj', {
+      method: 'POST',
+      body: data,
+      headers: {
+        Accept: 'application/json',
+      },
     });
+
+    if (response.ok) {
+      setStatus('✅ Message sent successfully!');
+      form.reset();
+    } else {
+      setStatus('❌ Failed to send message. Please try again.');
+    }
   };
 
   return (
@@ -27,23 +29,23 @@ const Contact = () => {
       <h2 className="text-4xl font-bold mb-6 underline text-gray-800">Contact Me</h2>
       <p className="mb-10 text-lg text-gray-700">Have a project or just want to say hi? Fill in the form below!</p>
 
-      <form ref={form} onSubmit={sendEmail} className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg space-y-6">
+      <form onSubmit={handleSubmit} className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg space-y-6">
         <input
           type="text"
-          name="name"                             // ✅ Match with {{name}} in EmailJS
+          name="name"
           placeholder="Your Name"
           required
           className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <input
           type="email"
-          name="email"                            // ✅ Match with {{email}} in EmailJS
+          name="email"
           placeholder="Your Email"
           required
           className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
         <textarea
-          name="message"                          // ✅ Match with {{message}} in EmailJS
+          name="message"
           placeholder="Your Message"
           rows="5"
           required
@@ -55,6 +57,7 @@ const Contact = () => {
         >
           Send Message
         </button>
+        {status && <p className="text-green-700 mt-4">{status}</p>}
       </form>
     </section>
   );
